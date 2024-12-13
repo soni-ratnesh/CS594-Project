@@ -12,4 +12,8 @@ class QuardTreeNode(object):
     
     def is_leaf(self):
         return len(self.children) == 0
-
+    
+    def remove_point(self, point):
+        if point in self.points:
+            self.points.remove(point)
+        self.representative = self._cal_representative()

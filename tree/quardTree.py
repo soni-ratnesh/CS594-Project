@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 class QuardTree(object):
     def __init__(self):
         self.root = None
+        self.deleted_count = 0
     
     def build(self, points):
 
@@ -60,6 +61,9 @@ class QuardTree(object):
 
         while S:
             node = S.pop(0)
+            if node.representative is None:
+                continue
+
             node_distance = query_pt.cal_distance(node.representative)
             
             if node_distance < curr_distance:
@@ -77,6 +81,7 @@ class QuardTree(object):
         ax.set_aspect('equal', adjustable='box')
         plt.show()
 
+
     def _draw_node(self, node, ax):
         if node is None:
             return
@@ -87,3 +92,32 @@ class QuardTree(object):
 
         for child in node.children:
             self._draw_node(child, ax)
+    
+
+    def delete(self, point):
+        def _delete(node):
+            if node.is_leaf():
+                node.remove_point(point)
+                return 
+
+            
+            if point == node.representative:
+                print("a")
+                node.points.remove(point)
+                node.representative = node._cal_representative()
+
+
+            for child in node.children:
+                if child.boundary.contains_point(point):
+                    _delete(child)
+                    break
+                
+        _delete(self.root)
+        self.deleted_count += 1
+
+        if self.deleted_count > len(self.root.points) // 2:
+            self.rebuild(self.root.points)
+            self.deleted_count = 0
+
+    def rebuild(self, points):
+        self.build(points)
