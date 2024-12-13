@@ -1,5 +1,6 @@
 from .quardTreeNode import QuardTreeNode
 from .boundingBox import BoundingBox
+
 import matplotlib.pyplot as plt
 
 
@@ -8,6 +9,8 @@ class QuardTree(object):
     def __init__(self):
         self.root = None
         self.deleted_count = 0
+        self.points = []
+        self.total_points = 0
     
     def build(self, points):
 
@@ -21,10 +24,14 @@ class QuardTree(object):
                 y_max=max(y_coords)
             )
         
-        self.root = QuardTreeNode(points=points, boundary=boundary)
-        self._subdivide(self.root)
+        self.root = QuardTreeNode(boundary=
+                                  boundary, representative=None)
+        self.points = points
+        self.total_points = len(self.points)
+
+        self._subdivide(self.root, self.points)
     
-    def _subdivide(self, node):
+    def _subdivide(self, node, points):
         if node is None:
             return ValueError("Build QuardTree it first")
         
@@ -40,18 +47,23 @@ class QuardTree(object):
 
         quard_points = {quard : [] for quard in quards}
 
-        for point in node.points:
+        for point in points:
             for quard in quards:
                 if quard.contains_point(point):
                     quard_points[quard].append(point)
                     break
 
-        for quard, points in quard_points.items():
+        for quard, q_points in quard_points.items():
             if points:
-                child = QuardTreeNode(boundary=quard, points=points)
+                child = QuardTreeNode(boundary=quard, representative=None)
                 node.children.append(child)
-                if len(points) > 1:
-                    self._subdivide(child) 
+                if len(q_points) > 1:
+                    self._subdivide(child, q_points) 
+                else:
+                    child.representative = q_points[0]
+        
+        if node.representative is None:
+            node.representative = node._cal_representative()
     
     def searchANN(self, query_pt, epsilon):
         S = [self.root]
@@ -76,7 +88,7 @@ class QuardTree(object):
         return curr_point
 
     def visualize(self):
-        fig, ax = plt.subplots(figsize=(50, 50))
+        fig, ax = plt.subplots(figsize=(10, 10))
         self._draw_node(self.root, ax)
         ax.set_aspect('equal', adjustable='box')
         plt.show()
@@ -87,8 +99,8 @@ class QuardTree(object):
             return
 
         node.boundary.draw(ax)
-        for point in node.points:
-            ax.plot(point.x, point.y, 'o', markersize=3)
+        if node.representative:
+            ax.plot(node.representative.x, node.representative.y, 'o', markersize=3)
 
         for child in node.children:
             self._draw_node(child, ax)
@@ -100,22 +112,18 @@ class QuardTree(object):
                 node.remove_point(point)
                 return 
 
-            
-            if point == node.representative:
-                print("a")
-                node.points.remove(point)
-                node.representative = node._cal_representative()
-
-
             for child in node.children:
                 if child.boundary.contains_point(point):
                     _delete(child)
                     break
-                
+            node.representative = node._cal_representative()
+
         _delete(self.root)
         self.deleted_count += 1
 
-        if self.deleted_count > len(self.root.points) // 2:
+        self.points.remove(point)
+
+        if self.deleted_count > self.total_points // 2:
             self.rebuild(self.root.points)
             self.deleted_count = 0
 
