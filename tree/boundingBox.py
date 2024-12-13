@@ -1,5 +1,6 @@
 import math
 
+
 class BoundingBox(object):
     def __init__(self, x_min, y_min, x_max, y_max):
         self.x_min, self.y_min, self.x_max, self.y_max = x_min, y_min, x_max, y_max
