@@ -1,5 +1,6 @@
 from .quardTreeNode import QuardTreeNode
 from .boundingBox import BoundingBox
+import matplotlib.pyplot as plt
 
 
 
@@ -69,3 +70,20 @@ class QuardTree(object):
                 S.extend([child for child in node.children])
 
         return curr_point
+
+    def visualize(self):
+        fig, ax = plt.subplots(figsize=(50, 50))
+        self._draw_node(self.root, ax)
+        ax.set_aspect('equal', adjustable='box')
+        plt.show()
+
+    def _draw_node(self, node, ax):
+        if node is None:
+            return
+
+        node.boundary.draw(ax)
+        for point in node.points:
+            ax.plot(point.x, point.y, 'o', markersize=3)
+
+        for child in node.children:
+            self._draw_node(child, ax)
