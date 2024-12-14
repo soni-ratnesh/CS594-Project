@@ -38,3 +38,9 @@ def _find_min_pair_distance(points):
             distance = math.sqrt((points[i].x - points[j].x)**2 + (points[i].y - points[j].y)**2)
             min_distance = min(min_distance, distance)
     return min_distance if min_distance != float('inf') else 0
+
+
+def filter_points(points, bounding_box):
+    return list(filter(bounding_box.contains_point, points))
+
+
