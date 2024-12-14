@@ -32,8 +32,6 @@ class QuardTree(object):
         self._subdivide(self.root, self.points)
     
     def _subdivide(self, node, points):
-        if node is None:
-            return ValueError("Build QuardTree it first")
         
         x_mid = (node.boundary.x_max - node.boundary.x_min)/2 + node.boundary.x_min
         y_mid = (node.boundary.y_max - node.boundary.y_min)/2 + node.boundary.y_min
@@ -59,7 +57,7 @@ class QuardTree(object):
                 node.children.append(child)
                 if len(q_points) > 1:
                     self._subdivide(child, q_points) 
-                else:
+                elif len(q_points)==1:
                     child.representative = q_points[0]
         
         if node.representative is None:
