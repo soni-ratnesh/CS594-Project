@@ -46,13 +46,13 @@ def _find_min_pair_distance(points):
 def filter_points(points, bounding_box):
     return list(filter(bounding_box.contains_point, points))
 
-def cal_nn_distance(points, epsilons):
+def cal_nn_distance(points, epsilons, tree):
     distances = {}
 
     for p in points:
         distances[(p.x, p.y)] = {}
         for eps in epsilons:
-            nearest_point = qt.searchANN(p, eps)
+            nearest_point = tree.searchANN(p, eps)
             distance = p.cal_distance(nearest_point) 
             distances[(p.x, p.y)][eps] = distance
     return distances
@@ -60,7 +60,7 @@ def cal_nn_distance(points, epsilons):
 def generate_random_queries(x_min, x_max, y_min, y_max, num_queries=1000):
     return [Point(random.uniform(x_min, x_max), random.uniform(y_min, y_max)) for _ in range(num_queries)]
 
-def run_queries(region_min, region_max, ep, num_queries=1000):
+def run_queries(region_min, region_max, ep, tree, num_queries=1000):
     distances = []
     query_times = []
 
@@ -69,7 +69,7 @@ def run_queries(region_min, region_max, ep, num_queries=1000):
     for query in queries:
         start_time = time.time()
 
-        nearest_point = qt.searchANN(query, ep)
+        nearest_point = tree.searchANN(query, ep)
 
         query_time = time.time() - start_time
         query_times.append(query_time)
@@ -81,3 +81,18 @@ def run_queries(region_min, region_max, ep, num_queries=1000):
     avg_query_time = np.mean(query_times)
 
     return avg_distance, avg_query_time
+
+def sample_n_points(data_points, n, ignore_bbox=[], ignore_pts = []):
+    random_points = []
+    while len(random_points)!=n:
+        s = random.choice(data_points)
+        if s in random_points:
+            continue
+        if s in ignore_pts:
+            continue
+        for bbox in ignore_bbox:
+            if bbox.contains_point(s):
+                break
+        else:
+            random_points.append(s)
+    return random_points
