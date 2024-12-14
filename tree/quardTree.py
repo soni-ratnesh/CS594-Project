@@ -122,7 +122,7 @@ class QuardTree(object):
         self.points.remove(point)
 
         if self.deleted_count > self.total_points // 2:
-            self.rebuild(self.root.points)
+            self.rebuild(self.points)
             self.deleted_count = 0
 
     def rebuild(self, points):
