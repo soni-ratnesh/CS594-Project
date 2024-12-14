@@ -1,6 +1,9 @@
 from tree.points import Point
 import csv
 import math
+import random
+import time
+import numpy as np
 
 def read_csv(file_path):
     with open(file_path, 'r') as file:
@@ -43,4 +46,38 @@ def _find_min_pair_distance(points):
 def filter_points(points, bounding_box):
     return list(filter(bounding_box.contains_point, points))
 
+def cal_nn_distance(points, epsilons):
+    distances = {}
 
+    for p in points:
+        distances[(p.x, p.y)] = {}
+        for eps in epsilons:
+            nearest_point = qt.searchANN(p, eps)
+            distance = p.cal_distance(nearest_point) 
+            distances[(p.x, p.y)][eps] = distance
+    return distances
+
+def generate_random_queries(x_min, x_max, y_min, y_max, num_queries=1000):
+    return [Point(random.uniform(x_min, x_max), random.uniform(y_min, y_max)) for _ in range(num_queries)]
+
+def run_queries(region_min, region_max, ep, num_queries=1000):
+    distances = []
+    query_times = []
+
+    queries = generate_random_queries(region_min[0], region_max[0], region_min[1], region_max[1], num_queries)
+
+    for query in queries:
+        start_time = time.time()
+
+        nearest_point = qt.searchANN(query, ep)
+
+        query_time = time.time() - start_time
+        query_times.append(query_time)
+
+        distance = query.cal_distance(nearest_point)
+        distances.append(distance)
+
+    avg_distance = np.mean(distances)
+    avg_query_time = np.mean(query_times)
+
+    return avg_distance, avg_query_time
